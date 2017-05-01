@@ -16,3 +16,9 @@ def file_exists(filename):
     path = os.path.join(*config.path + [filename])
     return os.path.isfile(path)
 
+def make_dir():
+    path = os.path.join(*config.path)
+    if os.path.isdir(path):
+        return
+    os.makedirs(path)
+

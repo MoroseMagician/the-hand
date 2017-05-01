@@ -3,6 +3,7 @@ from scrape import Scrape
 import aiomysql
 import discord
 import config
+import util
 
 bot = commands.Bot(command_prefix = commands.when_mentioned_or(*config.prefixes),
                    description    = config.description,
@@ -22,6 +23,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
     await session.check_message(message)
+    await bot.process_commands(message)
 
 if __name__ == "__main__":
     for extension in config.initial_extensions:
@@ -31,5 +33,6 @@ if __name__ == "__main__":
             print("Failed to load extension!")
             print("{}: {}".format(type(oops), str(oops)))
     session = Scrape(bot.loop)
+    util.make_dir()
 
 bot.run(config.token)

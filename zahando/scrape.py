@@ -30,6 +30,8 @@ class Scrape():
         valid_urls = []
         messages = []
         for s in message.clean_content.split():
+            if s[0] == "<" and s[-1] == ">":
+                s = s[1:-1]
             if self.is_url(s):
                 extension = await self.get_head(s)
                 if extension is not False:
@@ -38,17 +40,21 @@ class Scrape():
                     messages.append(s)
             else:
                 messages.append(s)
-        attach = message.attachments[0]
-        if "width" in attach and "height" in attach:
-            valid_urls.append((attach["url"], "." + attach["filename"].split(".")[-1]))
+
+        # Check for attached (uploaded) images as well
+        if len(message.attachments) > 0:
+            attach = message.attachments[0]
+            if "width" in attach and "height" in attach:
+                valid_urls.append((attach["url"], "." + attach["filename"].split(".")[-1]))
         text = " ".join(messages)
-        await self.insert(valid_urls, message, text)
+        if len(valid_urls) > 0:
+            await self.insert(valid_urls, message, text)
 
     async def insert(self, urls, message, text):
         query = "INSERT INTO haha_nice_meme_my_friend("    \
                 "user, url, message, filename, timestamp)" \
                 "VALUES(%s, %s, %s, %s, NOW());"
-        for url in urls:
+        for i, url in enumerate(urls):
             filename = None
             if config.download_images:
                 filename = util.generate_filename(url[1])
@@ -58,6 +64,7 @@ class Scrape():
                 await cursor.execute(query, 
                     (str(message.author), url[0], text, filename))
         await self.dbconnector.commit()
+        print("{} | {} images scraped from {}".format(message.timestamp, i+1, message.author))
 
     def is_url(self, url):
         u = urlparse(url)
@@ -71,8 +78,11 @@ class Scrape():
                 try:
                     head = resp.headers["Content-Type"].split("/")
                     if head[0] == "image":
-                        if head[1] == "jpeg":
-                            return ".jpeg"
+                        if head[1] == "jpeg": 
+                            # You might be wondering why I'm explicitly stating this
+                            # The guess extension for jpeg is super stupid
+                            # It returns .jpe for some reason, which is gross
+                            return ".jpeg" 
                         return guess_extension(resp.headers["Content-Type"])
                 except KeyError: pass
             return False
