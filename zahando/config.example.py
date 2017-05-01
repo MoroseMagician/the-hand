@@ -22,7 +22,7 @@ initial_extensions = [
 description = "ZA HANDO"
 
 # Relative path to image download
-path = ["img"]
+path = ["img", "family_guy_funny_pictures"]
 
 # Some settings
 download_images = True
