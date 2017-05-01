@@ -15,6 +15,8 @@ class Scrape():
     def __del__(self):
         if not self.session.closed:
             self.session.close()
+        if not self.dbconnector.closed:
+            self.dbconnector.close()
 
     async def connect(self):
         self.dbconnector  = await aiomysql.connect(
