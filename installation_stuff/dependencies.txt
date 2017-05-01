@@ -1,0 +1,8 @@
+Python 3.4 or higher
+MySQL 5.5.3 or higher
+
+-- Libraries
+discord.py
+aiohttp
+pymysql
+aiomysql
